@@ -21,7 +21,9 @@ OPTIONS = [
     [['--entity-id'], {'dest': 'entity_id', 'help': 'Parent Entity ID'}],
     [['--label'], {'dest': 'label', 'help': 'Check label'}],
     [['--type'], {'dest': 'type', 'help': 'Check type'}],
-    [['--details'], {'dest': 'details', 'help': 'Check details'}],
+    [['--details-file'], {'dest': 'details_file', 'help': 'Check details'}],
+    [['--details-args'], {'dest': 'details_args', 'help': 'Check details'}],
+    [['--details-timeout'], {'dest': 'details_timeout', 'help': 'Check details'}],
     [['--timeout'], {'dest': 'timeout', 'help': 'Check timeout'}],
     [['--period'], {'dest': 'period', 'help': 'Check period'}],
     [['--monitoring-zones'], {'dest': 'monitoring_zones', 'help': 'A list of monitoring zones'}],
@@ -33,8 +35,15 @@ OPTIONS = [
 REQUIRED_OPTIONS = ['entity_id', 'type']
 
 def callback(driver, options, args, callback):
+    details = {}
     options.monitoring_zones = str_to_list(options.monitoring_zones)
-    options.details = str_to_dict(options.details)
+    if options.details_file is not None:
+        details['file'] = options.details_file
+        if options.details_args is not None:
+            details['args'] = str_to_list(options.details_args)
+        if options.details_timeout is not None:
+            details['timeout'] = options.details_timeout
+
     en = driver.get_entity(entity_id=options.entity_id)
     result = driver.create_check(label=options.label, timeout=options.timeout,
                                  period=options.period, entity=en,
@@ -43,7 +52,7 @@ def callback(driver, options, args, callback):
                                  target_hostname=options.target_hostname,
                                  target_resolver=options.target_resolver,
                                  type=options.type,
-                                 details=options.details,
+                                 details=details,
                                  who=options.who,
                                  why=options.why)
 
